@@ -1,0 +1,44 @@
+{{- if and .Values.shell.enabled .Values.shell.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "microservices.fullname" . }}-shell
+  labels:
+    {{- include "microservices.labels" . | nindent 4 }}
+    app: shell
+  {{- with .Values.shell.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.shell.ingress.className }}
+  ingressClassName: {{ .Values.shell.ingress.className }}
+  {{- end }}
+  {{- if .Values.shell.ingress.tls }}
+  tls:
+    {{- range .Values.shell.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.shell.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "microservices.fullname" $ }}-shell
+                port:
+                  number: {{ $.Values.shell.service.port }}
+          {{- end }}
+    {{- end }}
+{{- end }} 

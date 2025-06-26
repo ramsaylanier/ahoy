@@ -1,0 +1,129 @@
+version: v2beta1
+
+# Service-specific variables
+vars:
+  SERVICE_NAME: ${SERVICE_NAME}
+  SERVICE_PORT: ${SERVICE_PORT}
+  PROJECT_NAME: "ahoy-microservices"
+  REGISTRY: "ghcr.io"
+  IMAGE_TAG: "latest"
+
+# Build configuration for auth service
+build:
+  auth:
+    dockerfile: ./Dockerfile
+    context: .
+    tags:
+      - ${REGISTRY}/${PROJECT_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
+
+# Deploy configuration
+deploy:
+  helm:
+    chart:
+      name: ../../charts/microservices
+    values:
+      auth:
+        enabled: true
+        image: ${REGISTRY}/${PROJECT_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
+        port: ${SERVICE_PORT}
+        replicas: 2
+        resources:
+          limits:
+            cpu: 300m
+            memory: 256Mi
+          requests:
+            cpu: 150m
+            memory: 128Mi
+        service:
+          type: ClusterIP
+          port: ${SERVICE_PORT}
+        env:
+          - name: NODE_ENV
+            value: "production"
+          - name: JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: auth-secrets
+                key: jwt-secret
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: auth-secrets
+                key: database-url
+          - name: REDIS_URL
+            valueFrom:
+              secretKeyRef:
+                name: auth-secrets
+                key: redis-url
+
+# Development configuration
+dev:
+  auth:
+    labelSelector:
+      app: ${SERVICE_NAME}
+    container: ${SERVICE_NAME}
+    workingDir: /app
+    sync:
+      - path: ./
+        excludePaths:
+          - node_modules/
+          - .git/
+          - dist/
+          - build/
+    ports:
+      - port: "${SERVICE_PORT}:${SERVICE_PORT}"
+    terminal:
+      command: npm run dev
+    logs:
+      enabled: true
+      follow: true
+
+# Service-specific pipelines
+pipelines:
+  dev:
+    run: |
+      # Build the auth service
+      devspace build auth
+      # Deploy to development environment
+      devspace deploy
+      # Start development mode
+      devspace dev auth
+
+  build:
+    run: |
+      # Build the auth service
+      devspace build auth
+
+  deploy:
+    run: |
+      # Deploy the auth service
+      devspace deploy
+
+  logs:
+    run: |
+      # View logs for the auth service
+      devspace logs auth
+
+  test:
+    run: |
+      # Run tests for the auth service
+      npm test
+
+# Service-specific hooks
+hooks:
+  - command: echo "Building ${SERVICE_NAME} service..."
+    when:
+      before:
+        - dev:build
+  - command: echo "${SERVICE_NAME} service built successfully"
+    when:
+      after:
+        - dev:build
+  - command: echo "Deploying ${SERVICE_NAME} service..."
+    when:
+      before:
+        - dev:deploy
+  - command: echo "${SERVICE_NAME} service deployed successfully"
+    when:
+      after:
+        - dev:deploy

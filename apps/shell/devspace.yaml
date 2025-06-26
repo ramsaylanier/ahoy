@@ -1,0 +1,123 @@
+version: v2beta1
+
+# Service-specific variables
+vars:
+  SERVICE_NAME: ${SERVICE_NAME}
+  SERVICE_PORT: ${SERVICE_PORT}
+  PROJECT_NAME: "ahoy-microservices"
+  REGISTRY: "ghcr.io"
+  IMAGE_TAG: "latest"
+
+# Build configuration for shell application
+build:
+  shell:
+    dockerfile: ./Dockerfile
+    context: .
+    tags:
+      - ${REGISTRY}/${PROJECT_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
+
+# Deploy configuration
+deploy:
+  helm:
+    chart:
+      name: ../../charts/microservices
+    values:
+      shell:
+        enabled: true
+        image: ${REGISTRY}/${PROJECT_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
+        port: ${SERVICE_PORT}
+        replicas: 2
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        service:
+          type: LoadBalancer
+          port: 80
+          targetPort: ${SERVICE_PORT}
+        ingress:
+          enabled: true
+          className: nginx
+          hosts:
+            - host: shell.ahoy.local
+              paths:
+                - path: /
+                  pathType: Prefix
+        env:
+          - name: NODE_ENV
+            value: "production"
+          - name: API_BASE_URL
+            value: "http://api.ahoy.local"
+
+# Development configuration
+dev:
+  shell:
+    labelSelector:
+      app: ${SERVICE_NAME}
+    container: ${SERVICE_NAME}
+    workingDir: /app
+    open:
+      - url: http://localhost:${SERVICE_PORT}
+    sync:
+      - path: ./
+        excludePaths:
+          - node_modules/
+          - .git/
+          - dist/
+          - build/
+          - .angular/
+    ports:
+      - port: "${SERVICE_PORT}:${SERVICE_PORT}"
+    terminal:
+      command: npm run dev
+    logs:
+      enabled: true
+      follow: true
+
+# Service-specific pipelines
+pipelines:
+  dev:
+    run: |
+      # Build the shell application
+      devspace build shell
+      # Deploy to development environment
+      devspace deploy
+      # Start development mode
+      devspace dev shell
+
+  build:
+    run: |
+      # Build the shell application
+      devspace build shell
+
+  deploy:
+    run: |
+      # Deploy the shell application
+      devspace deploy
+
+  logs:
+    run: |
+      # View logs for the shell application
+      devspace logs shell
+
+# Service-specific hooks
+hooks:
+  - command: echo "Building ${SERVICE_NAME} service..."
+    when:
+      before:
+        - dev:build
+  - command: echo "${SERVICE_NAME} service built successfully"
+    when:
+      after:
+        - dev:build
+  - command: echo "Deploying ${SERVICE_NAME} service..."
+    when:
+      before:
+        - dev:deploy
+  - command: echo "${SERVICE_NAME} service deployed successfully"
+    when:
+      after:
+        - dev:deploy

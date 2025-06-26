@@ -1,0 +1,108 @@
+version: v2beta1
+
+vars:
+  # Project configuration
+  PROJECT_NAME: "ahoy-microservices"
+  REGISTRY: "ghcr.io"
+  IMAGE_TAG: "latest"
+
+  # Service ports
+  SHELL_PORT: 3000
+  AUTH_PORT: 3001
+  USER_PORT: 3002
+  PRODUCT_PORT: 3003
+  ORDER_PORT: 3004
+  NOTIFICATION_PORT: 3005
+
+# Import service-specific configurations
+imports:
+  - path: ./apps/shell/devspace.yaml
+    vars:
+      SERVICE_NAME: "shell"
+      SERVICE_PORT: ${SHELL_PORT}
+  - path: ./apps/auth/devspace.yaml
+    vars:
+      SERVICE_NAME: "auth"
+      SERVICE_PORT: ${AUTH_PORT}
+  - path: ./apps/user/devspace.yaml
+    vars:
+      SERVICE_NAME: "user"
+      SERVICE_PORT: ${USER_PORT}
+  - path: ./apps/product/devspace.yaml
+    vars:
+      SERVICE_NAME: "product"
+      SERVICE_PORT: ${PRODUCT_PORT}
+  - path: ./apps/order/devspace.yaml
+    vars:
+      SERVICE_NAME: "order"
+      SERVICE_PORT: ${ORDER_PORT}
+  - path: ./apps/notification/devspace.yaml
+    vars:
+      SERVICE_NAME: "notification"
+      SERVICE_PORT: ${NOTIFICATION_PORT}
+
+# Pipeline configuration for orchestrating all services
+pipelines:
+  dev:
+    run: |
+      # Build all services
+      devspace build
+      # Deploy to development environment
+      devspace deploy
+      # Start development mode for all services
+      devspace dev
+
+  prod:
+    run: |
+      # Build all services
+      devspace build
+      # Deploy to production environment
+      devspace deploy --namespace production
+
+  # Individual service pipelines
+  shell-dev:
+    run: |
+      devspace build shell
+      devspace deploy shell
+      devspace dev shell
+
+  auth-dev:
+    run: |
+      devspace build auth
+      devspace deploy auth
+      devspace dev auth
+
+  user-dev:
+    run: |
+      devspace build user
+      devspace deploy user
+      devspace dev user
+
+  product-dev:
+    run: |
+      devspace build product
+      devspace deploy product
+      devspace dev product
+
+  order-dev:
+    run: |
+      devspace build order
+      devspace deploy order
+      devspace dev order
+
+  notification-dev:
+    run: |
+      devspace build notification
+      devspace deploy notification
+      devspace dev notification
+
+# Global hooks for shared functionality
+hooks:
+  - command: echo "Starting Ahoy Microservices Development Environment"
+    when:
+      before:
+        - dev:dev
+  - command: echo "All services deployed successfully"
+    when:
+      after:
+        - dev:deploy
