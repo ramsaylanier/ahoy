@@ -1,5 +1,6 @@
 import { Component } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
+import { RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatButtonModule } from "@angular/material/button";
@@ -14,6 +15,8 @@ import { MatMenuModule } from "@angular/material/menu";
   imports: [
     CommonModule,
     RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
     MatToolbarModule,
     MatButtonModule,
     MatSidenavModule,
@@ -57,13 +60,7 @@ import { MatMenuModule } from "@angular/material/menu";
             </a>
           </mat-list-item>
           <mat-list-item>
-            <a routerLink="/users" routerLinkActive="active">
-              <mat-icon>people</mat-icon>
-              <span>Users</span>
-            </a>
-          </mat-list-item>
-          <mat-list-item>
-            <a routerLink="/products" routerLinkActive="active">
+            <a routerLink="/projects" routerLinkActive="active">
               <mat-icon>inventory</mat-icon>
               <span>Projects</span>
             </a>
