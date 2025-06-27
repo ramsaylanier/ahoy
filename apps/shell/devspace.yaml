@@ -1,66 +1,56 @@
 version: v2beta1
+name: shell
 
 # Service-specific variables
 vars:
-  SERVICE_NAME: ${SERVICE_NAME}
-  SERVICE_PORT: ${SERVICE_PORT}
+  SERVICE_PORT: "3000"
   PROJECT_NAME: "ahoy-microservices"
   REGISTRY: "ghcr.io"
   IMAGE_TAG: "latest"
 
-# Build configuration for shell application
-build:
-  shell:
-    dockerfile: ./Dockerfile
-    context: .
-    tags:
-      - ${REGISTRY}/${PROJECT_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
+# This is a list of `pipelines` that DevSpace can execute (you can define your own)
+pipelines:
+  # This is the pipeline for the main command: `devspace dev` (or `devspace run-pipeline dev`)
+  dev:
+    run: |-
+      run_dependencies --all       # 1. Deploy any projects this project needs (see "dependencies")
+      ensure_pull_secrets --all    # 2. Ensure pull secrets
+      create_deployments --all     # 3. Deploy Helm charts and manifests specfied as "deployments"
+      start_dev shell                # 4. Start dev mode "app" (see "dev" section)
+  # You can run this pipeline via `devspace deploy` (or `devspace run-pipeline deploy`)
+  deploy:
+    run: |-
+      run_dependencies --all                            # 1. Deploy any projects this project needs (see "dependencies")
+      ensure_pull_secrets --all                         # 2. Ensure pull secrets
+      build_images --all -t $(git describe --always)    # 3. Build, tag (git commit hash) and push all images (see "images")
+      create_deployments --all                          # 4. Deploy Helm charts and manifests specfied as "deployments"
 
-# Deploy configuration
-deploy:
-  helm:
-    chart:
-      name: ../../charts/microservices
-    values:
-      shell:
-        enabled: true
-        image: ${REGISTRY}/${PROJECT_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
-        port: ${SERVICE_PORT}
-        replicas: 2
-        resources:
-          limits:
-            cpu: 500m
-            memory: 512Mi
-          requests:
-            cpu: 250m
-            memory: 256Mi
+# Images configuration
+images:
+  shell:
+    image: shell:latest
+    dockerfile: ./Dockerfile
+
+# Deployments configuration
+deployments:
+  shell:
+    helm:
+      chart:
+        name: component-chart
+        repo: https://charts.devspace.sh
+      values:
+        containers:
+          - image: shell:latest
         service:
-          type: LoadBalancer
-          port: 80
-          targetPort: ${SERVICE_PORT}
-        ingress:
-          enabled: true
-          className: nginx
-          hosts:
-            - host: shell.ahoy.local
-              paths:
-                - path: /
-                  pathType: Prefix
-        env:
-          - name: NODE_ENV
-            value: "production"
-          - name: API_BASE_URL
-            value: "http://api.ahoy.local"
+          ports:
+            - port: ${SERVICE_PORT}
 
 # Development configuration
 dev:
   shell:
-    labelSelector:
-      app: ${SERVICE_NAME}
-    container: ${SERVICE_NAME}
+    imageSelector: image(shell)
+    devImage: node:22-alpine
     workingDir: /app
-    open:
-      - url: http://localhost:${SERVICE_PORT}
     sync:
       - path: ./
         excludePaths:
@@ -69,55 +59,18 @@ dev:
           - dist/
           - build/
           - .angular/
-    ports:
-      - port: "${SERVICE_PORT}:${SERVICE_PORT}"
     terminal:
-      command: npm run dev
+      command: "npm install && npm run dev"
     logs:
       enabled: true
-      follow: true
-
-# Service-specific pipelines
-pipelines:
-  dev:
-    run: |
-      # Build the shell application
-      devspace build shell
-      # Deploy to development environment
-      devspace deploy
-      # Start development mode
-      devspace dev shell
-
-  build:
-    run: |
-      # Build the shell application
-      devspace build shell
-
-  deploy:
-    run: |
-      # Deploy the shell application
-      devspace deploy
-
-  logs:
-    run: |
-      # View logs for the shell application
-      devspace logs shell
-
-# Service-specific hooks
-hooks:
-  - command: echo "Building ${SERVICE_NAME} service..."
-    when:
-      before:
-        - dev:build
-  - command: echo "${SERVICE_NAME} service built successfully"
-    when:
-      after:
-        - dev:build
-  - command: echo "Deploying ${SERVICE_NAME} service..."
-    when:
-      before:
-        - dev:deploy
-  - command: echo "${SERVICE_NAME} service deployed successfully"
-    when:
-      after:
-        - dev:deploy
+    ssh:
+      enabled: true
+    proxyCommands:
+      - command: devspace
+      - command: kubectl
+      - command: helm
+      - gitCredentials: true
+    ports:
+      - port: ${SERVICE_PORT}
+    open:
+      - url: http://localhost:${SERVICE_PORT}

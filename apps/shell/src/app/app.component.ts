@@ -50,30 +50,24 @@ import { MatMenuModule } from "@angular/material/menu";
     <mat-sidenav-container class="sidenav-container">
       <mat-sidenav #sidenav mode="side" opened class="sidenav">
         <mat-nav-list>
-          <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
-            <mat-icon>dashboard</mat-icon>
-            <span>Dashboard</span>
-          </a>
-          <a mat-list-item routerLink="/users" routerLinkActive="active">
-            <mat-icon>people</mat-icon>
-            <span>Users</span>
-          </a>
-          <a mat-list-item routerLink="/products" routerLinkActive="active">
-            <mat-icon>inventory</mat-icon>
-            <span>Products</span>
-          </a>
-          <a mat-list-item routerLink="/orders" routerLinkActive="active">
-            <mat-icon>shopping_cart</mat-icon>
-            <span>Orders</span>
-          </a>
-          <a
-            mat-list-item
-            routerLink="/notifications"
-            routerLinkActive="active"
-          >
-            <mat-icon>notifications</mat-icon>
-            <span>Notifications</span>
-          </a>
+          <mat-list-item>
+            <a routerLink="/dashboard" routerLinkActive="active">
+              <mat-icon>dashboard</mat-icon>
+              <span>Dashboard</span>
+            </a>
+          </mat-list-item>
+          <mat-list-item>
+            <a routerLink="/users" routerLinkActive="active">
+              <mat-icon>people</mat-icon>
+              <span>Users</span>
+            </a>
+          </mat-list-item>
+          <mat-list-item>
+            <a routerLink="/products" routerLinkActive="active">
+              <mat-icon>inventory</mat-icon>
+              <span>Projects</span>
+            </a>
+          </mat-list-item>
         </mat-nav-list>
       </mat-sidenav>
 

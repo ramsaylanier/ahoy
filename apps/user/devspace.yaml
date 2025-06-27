@@ -1,50 +1,54 @@
 version: v2beta1
+name: user
 
 # Service-specific variables
 vars:
-  SERVICE_NAME: ${SERVICE_NAME}
-  SERVICE_PORT: ${SERVICE_PORT}
+  SERVICE_NAME: "user"
+  SERVICE_PORT: "3002"
   PROJECT_NAME: "ahoy-microservices"
   REGISTRY: "ghcr.io"
   IMAGE_TAG: "latest"
 
-# Build configuration for user service
-build:
+# Images configuration
+images:
   user:
     dockerfile: ./Dockerfile
     context: .
     tags:
       - ${REGISTRY}/${PROJECT_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
 
-# Deploy configuration
-deploy:
-  helm:
-    chart:
-      name: ../../charts/microservices
-    values:
-      user:
-        enabled: true
-        image: ${REGISTRY}/${PROJECT_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
-        port: ${SERVICE_PORT}
-        replicas: 2
-        resources:
-          limits:
-            cpu: 300m
-            memory: 256Mi
-          requests:
-            cpu: 150m
-            memory: 128Mi
-        service:
-          type: ClusterIP
+# Deployments configuration
+deployments:
+  user:
+    helm:
+      chart:
+        name: ../../charts/microservices
+      values:
+        user:
+          enabled: true
+          image: ghcr.io/ahoy-microservices/user:latest
           port: ${SERVICE_PORT}
-        env:
-          - name: NODE_ENV
-            value: "production"
-          - name: DATABASE_URL
-            valueFrom:
-              secretKeyRef:
-                name: user-secrets
-                key: database-url
+          replicas: 2
+          resources:
+            limits:
+              cpu: 300m
+              memory: 256Mi
+            requests:
+              cpu: 150m
+              memory: 128Mi
+          service:
+            type: ClusterIP
+            port: ${SERVICE_PORT}
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: user-secrets
+                  key: database-url
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:3001"
 
 # Development configuration
 dev:
@@ -66,7 +70,6 @@ dev:
       command: npm run dev
     logs:
       enabled: true
-      follow: true
 
 # Service-specific pipelines
 pipelines:
@@ -75,7 +78,7 @@ pipelines:
       # Build the user service
       devspace build user
       # Deploy to development environment
-      devspace deploy
+      devspace deploy user
       # Start development mode
       devspace dev user
 
@@ -87,7 +90,7 @@ pipelines:
   deploy:
     run: |
       # Deploy the user service
-      devspace deploy
+      devspace deploy user
 
   logs:
     run: |
@@ -102,18 +105,14 @@ pipelines:
 # Service-specific hooks
 hooks:
   - command: echo "Building ${SERVICE_NAME} service..."
-    when:
-      before:
-        - dev:build
+    events:
+      - before:build
   - command: echo "${SERVICE_NAME} service built successfully"
-    when:
-      after:
-        - dev:build
+    events:
+      - after:build
   - command: echo "Deploying ${SERVICE_NAME} service..."
-    when:
-      before:
-        - dev:deploy
+    events:
+      - before:deploy
   - command: echo "${SERVICE_NAME} service deployed successfully"
-    when:
-      after:
-        - dev:deploy
+    events:
+      - after:deploy
