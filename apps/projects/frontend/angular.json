@@ -2,11 +2,12 @@
 	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
 	"version": 1,
 	"cli": {
-		"packageManager": "npm"
+    "packageManager": "npm",
+    "analytics": false
 	},
 	"newProjectRoot": "projects",
 	"projects": {
-		"project-frontend": {
+		"projects-frontend": {
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
@@ -22,10 +23,10 @@
 					"options": {},
 					"configurations": {
 						"production": {
-							"target": "project-frontend:esbuild:production"
+							"target": "projects-frontend:esbuild:production"
 						},
 						"development": {
-							"target": "project-frontend:esbuild:development",
+							"target": "projects-frontend:esbuild:development",
 							"dev": true
 						}
 					},
@@ -34,7 +35,7 @@
 				"serve": {
 					"builder": "@angular-architects/native-federation:build",
 					"options": {
-						"target": "project-frontend:serve-original:development",
+						"target": "projects-frontend:serve-original:development",
 						"rebuildDelay": 0,
 						"dev": true,
 						"port": 0
@@ -106,15 +107,16 @@
 					"builder": "@angular/build:dev-server",
 					"configurations": {
 						"production": {
-							"buildTarget": "project-frontend:esbuild:production"
+							"buildTarget": "projects-frontend:esbuild:production"
 						},
 						"development": {
-							"buildTarget": "project-frontend:esbuild:development"
+							"buildTarget": "projects-frontend:esbuild:development"
 						}
 					},
 					"defaultConfiguration": "development",
 					"options": {
-						"port": 3001
+						"port": 3001,
+						"host": "0.0.0.0"
 					}
 				}
 			}

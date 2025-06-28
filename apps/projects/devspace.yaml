@@ -1,0 +1,187 @@
+version: v2beta1
+name: projects
+
+# Service-specific variables
+vars:
+  IMAGE_TAG: "latest"
+  BACKEND_PORT: "3002"
+  FRONTEND_PORT: "3001"
+  DB_PORT: "5432"
+
+# This is a list of `pipelines` that DevSpace can execute
+pipelines:
+  # This is the pipeline for the main command: `devspace dev`
+  dev:
+    run: |-
+      run_dependencies --all       # 1. Deploy any projects this project needs
+      ensure_pull_secrets --all    # 2. Ensure pull secrets
+      create_deployments --all     # 3. Deploy Helm charts and manifests
+      start_dev projects             # 4. Start dev mode for backend and frontend
+
+  build:
+    run: |
+      build_images --all -t $(git describe --always)
+
+  # You can run this pipeline via `devspace deploy`
+  deploy:
+    run: |-
+      run_dependencies --all                            # 1. Deploy any projects this project needs
+      ensure_pull_secrets --all                         # 2. Ensure pull secrets
+      build_images --all -t $(git describe --always)    # 3. Build, tag and push all images
+      create_deployments --all                          # 4. Deploy Helm charts and manifests
+
+# Images configuration
+images:
+  backend:
+    image: ahoy-projects-backend:${IMAGE_TAG}
+    dockerfile: ./backend/Dockerfile
+    context: ./backend
+    buildArgs:
+      NODE_ENV: development
+
+  frontend:
+    image: ahoy-projects-frontend:${IMAGE_TAG}
+    dockerfile: ./frontend/Dockerfile
+    context: ./frontend
+    buildArgs:
+      NODE_ENV: development
+
+# Deployments configuration
+deployments:
+  postgres:
+    helm:
+      chart:
+        name: postgresql
+        repo: https://charts.bitnami.com/bitnami
+        version: 16.7.14
+      values:
+        auth:
+          postgresPassword: "ahoy123"
+          database: "ahoy_projects"
+        primary:
+          service:
+            type: ClusterIP
+          persistence:
+            enabled: true
+            size: 1Gi
+        metrics:
+          enabled: false
+
+  backend:
+    helm:
+      chart:
+        name: component-chart
+        repo: https://charts.devspace.sh
+      values:
+        containers:
+          - image: ahoy-projects-backend:${IMAGE_TAG}
+        service:
+          ports:
+            - port: ${BACKEND_PORT}
+        env:
+          - name: NODE_ENV
+            value: development
+          - name: PORT
+            value: ${BACKEND_PORT}
+          - name: DB_HOST
+            value: postgres-primary
+          - name: DB_PORT
+            value: ${DB_PORT}
+          - name: DB_NAME
+            value: ahoy_projects
+          - name: DB_USER
+            value: postgres
+          - name: DB_PASSWORD
+            value: ahoy123
+
+  frontend:
+    helm:
+      chart:
+        name: component-chart
+        repo: https://charts.devspace.sh
+      values:
+        containers:
+          - image: ahoy-projects-frontend:${IMAGE_TAG}
+        service:
+          ports:
+            - port: ${FRONTEND_PORT}
+        env:
+          - name: NODE_ENV
+            value: development
+          - name: PORT
+            value: ${FRONTEND_PORT}
+
+# Development configuration
+dev:
+  projects:
+    imageSelector: image(backend)
+    devImage: node:22-alpine
+    workingDir: /app
+    sync:
+      - path: ./backend:/app/backend
+        excludePaths:
+          - node_modules/
+          - .git/
+          - dist/
+          - build/
+      - path: ./frontend:/app/frontend
+        excludePaths:
+          - node_modules/
+          - .git/
+          - dist/
+          - build/
+          - .angular/
+    terminal:
+      command: ./start-dev.sh
+    logs:
+      enabled: true
+    ssh:
+      enabled: true
+    ports:
+      - port: ${BACKEND_PORT}
+      - port: ${FRONTEND_PORT}
+    env:
+      - name: NODE_ENV
+        value: development
+      - name: PORT
+        value: ${BACKEND_PORT}
+      - name: DB_HOST
+        value: postgres-primary
+      - name: DB_PORT
+        value: ${DB_PORT}
+      - name: DB_NAME
+        value: ahoy_projects
+      - name: DB_USER
+        value: postgres
+      - name: DB_PASSWORD
+        value: ahoy123
+    open:
+      - url: http://localhost:${FRONTEND_PORT}
+
+  # frontend:
+  #   imageSelector: image(frontend)
+  #   devImage: node:22-alpine
+  #   workingDir: /app
+  #   sync:
+  #     - path: ./frontend:/app
+  #       excludePaths:
+  #         - node_modules/
+  #         - .git/
+  #         - dist/
+  #         - build/
+  #         - .angular/
+  #   terminal:
+  #     command: "npm install && npm run dev"
+  #   logs:
+  #     enabled: true
+  #   ssh:
+  #     enabled: true
+  #   ports:
+  #     - port: ${FRONTEND_PORT}
+  #   env:
+  #     - name: NODE_ENV
+  #       value: development
+  #     - name: PORT
+  #       value: ${FRONTEND_PORT}
+  #   open:
+  #     - url: http://localhost:${FRONTEND_PORT}

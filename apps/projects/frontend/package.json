@@ -1,12 +1,16 @@
 {
-  "name": "project-frontend",
-  "version": "0.0.0",
+  "name": "ahoy-projects-frontend",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "ng serve projects-frontend",
+    "dev": "ng serve projects-frontend",
+    "build": "ng build --configuration production",
+    "build:dev": "ng build --configurafghrs tion development",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "ng lint",
+    "e2e": "ng e2e"
   },
   "prettier": {
     "overrides": [

@@ -4,10 +4,8 @@ name: ahoy
 dependencies:
   shell:
     path: ./apps/shell
-  auth:
-    path: ./apps/auth
-  user:
-    path: ./apps/user
+  projects:
+    path: ./apps/projects
 
 # Pipeline configuration for orchestrating all services
 pipelines:
