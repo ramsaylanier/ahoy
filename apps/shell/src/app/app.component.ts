@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
@@ -8,6 +8,8 @@ import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatListModule } from "@angular/material/list";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { loadRemoteModule } from "@angular-architects/native-federation";
 
 @Component({
   selector: "app-root",
@@ -23,6 +25,7 @@ import { MatMenuModule } from "@angular/material/menu";
     MatListModule,
     MatIconModule,
     MatMenuModule,
+    MatProgressBarModule,
   ],
   template: `
     <mat-toolbar color="primary">
@@ -70,6 +73,21 @@ import { MatMenuModule } from "@angular/material/menu";
 
       <mat-sidenav-content class="sidenav-content">
         <div class="content">
+          <!-- Widget Section -->
+          <div class="widget-section">
+            <div class="loading-container" *ngIf="loadingWidget">
+              <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+              <p>Loading widget...</p>
+            </div>
+
+            <div
+              class="widget-container"
+              *ngIf="!loadingWidget && widgetComponent"
+            >
+              <ng-container *ngComponentOutlet="widgetComponent"></ng-container>
+            </div>
+          </div>
+
           <router-outlet></router-outlet>
         </div>
       </mat-sidenav-content>
@@ -107,9 +125,58 @@ import { MatMenuModule } from "@angular/material/menu";
         align-items: center;
         gap: 12px;
       }
+
+      .widget-section {
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: center;
+
+        .loading-container {
+          text-align: center;
+          padding: 20px;
+
+          p {
+            margin-top: 12px;
+            color: #666;
+            font-size: 14px;
+          }
+        }
+
+        .widget-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          ::ng-deep .widget-container {
+            padding: 0;
+            max-width: none;
+          }
+        }
+      }
     `,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = "Ahoy Microservices Shell";
+
+  // Widget properties
+  widgetComponent: any = null;
+  loadingWidget = false;
+
+  ngOnInit() {
+    this.loadWidget();
+  }
+
+  loadWidget() {
+    this.loadingWidget = true;
+    loadRemoteModule("widget", "./TimeWidget")
+      .then((m) => {
+        this.widgetComponent = m.App;
+        this.loadingWidget = false;
+      })
+      .catch((error) => {
+        console.error("Error loading widget:", error);
+        this.loadingWidget = false;
+      });
+  }
 }

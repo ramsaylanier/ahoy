@@ -2,18 +2,25 @@ version: v2beta1
 name: projects
 
 dependencies:
-  projects-backend:
+  backend:
     path: ./backend
     pipeline: dev
-  projects-frontend:
+  frontend:
     path: ./frontend
+    pipeline: dev
+  shell:
+    path: ../shell
     pipeline: dev
 
 # This is a list of `pipelines` that DevSpace can execute
 pipelines:
   dev:
     run: |-
-      run_dependencies --all
+      run_dependencies backend frontend
+
+  dev-with-shell:
+    run: |-
+      run_dependencies backend frontend shell
 
   build: run_dependencies --all --pipeline build
 
@@ -21,3 +28,7 @@ pipelines:
   deploy:
     run: |-
       run_dependencies --all --pipeline deploy
+
+commands:
+  with-shell: |-
+    devspace dev --pipeline dev-with-shell

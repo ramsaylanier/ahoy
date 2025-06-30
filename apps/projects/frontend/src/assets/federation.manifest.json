@@ -1,4 +1,3 @@
 {
-	"projects": "http://localhost:3001/remoteEntry.json",
 	"widget": "http://localhost:3003/remoteEntry.json"
 }

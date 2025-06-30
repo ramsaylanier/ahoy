@@ -46,6 +46,18 @@
     </mat-card>
   </div>
 
+  <!-- Widget Section -->
+  <div class="widget-section">
+    <div class="loading-container" *ngIf="loadingWidget()">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <p>Loading widget...</p>
+    </div>
+    
+    <div class="widget-container" *ngIf="!loadingWidget() && widgetComponent">
+      <ng-container *ngComponentOutlet="widgetComponent"></ng-container>
+    </div>
+  </div>
+
   <!-- Create Project Form -->
   <mat-card class="create-form-card" *ngIf="showCreateForm">
     <mat-card-header>

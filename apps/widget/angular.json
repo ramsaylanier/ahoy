@@ -1,9 +1,12 @@
 {
 	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
 	"version": 1,
+	"cli": {
+		"packageManager": "npm"
+	},
 	"newProjectRoot": "projects",
 	"projects": {
-		"ahoy-shell": {
+		"widget": {
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
@@ -19,10 +22,10 @@
 					"options": {},
 					"configurations": {
 						"production": {
-							"target": "ahoy-shell:esbuild:production"
+							"target": "widget:esbuild:production"
 						},
 						"development": {
-							"target": "ahoy-shell:esbuild:development",
+							"target": "widget:esbuild:development",
 							"dev": true
 						}
 					},
@@ -31,118 +34,93 @@
 				"serve": {
 					"builder": "@angular-architects/native-federation:build",
 					"options": {
-						"target": "ahoy-shell:serve-original:development",
+						"target": "widget:serve-original:development",
 						"rebuildDelay": 0,
-						"dev": true
+						"dev": true,
+						"port": 0
 					}
 				},
 				"extract-i18n": {
-					"builder": "@angular-devkit/build-angular:extract-i18n",
-					"options": {
-						"buildTarget": "ahoy-shell:build"
-					}
+					"builder": "@angular/build:extract-i18n"
 				},
 				"test": {
-					"builder": "@angular-devkit/build-angular:karma",
+					"builder": "@angular/build:karma",
 					"options": {
-						"polyfills": [
-							"zone.js",
-							"zone.js/testing"
-						],
 						"tsConfig": "tsconfig.spec.json",
 						"inlineStyleLanguage": "scss",
 						"assets": [
-							"src/favicon.ico",
-							"src/assets"
+							{
+								"glob": "**/*",
+								"input": "public"
+							}
 						],
 						"styles": [
-							"@angular/material/prebuilt-themes/indigo-pink.css",
-							"src/styles.scss"
-						],
-						"scripts": []
-					}
-				},
-				"lint": {
-					"builder": "@angular-eslint/builder:lint",
-					"options": {
-						"lintFilePatterns": [
-							"src/**/*.ts",
-							"src/**/*.html"
+							"src/styles.scss",
+							"@angular/material/prebuilt-themes/indigo-pink.css"
 						]
 					}
 				},
 				"esbuild": {
 					"builder": "@angular-devkit/build-angular:application",
 					"options": {
-						"outputPath": "dist/ahoy-shell",
-						"index": "src/index.html",
 						"browser": "src/main.ts",
-						"polyfills": [
-							"es-module-shims"
-						],
 						"tsConfig": "tsconfig.app.json",
 						"inlineStyleLanguage": "scss",
 						"assets": [
-							"src/favicon.ico",
-							"src/assets"
+							{
+								"glob": "**/*",
+								"input": "public"
+							}
 						],
 						"styles": [
-							"@angular/material/prebuilt-themes/indigo-pink.css",
-							"src/styles.scss"
+							"src/styles.scss",
+							"@angular/material/prebuilt-themes/indigo-pink.css"
 						],
-						"scripts": []
+						"polyfills": [
+							"es-module-shims"
+						]
 					},
 					"configurations": {
 						"production": {
 							"budgets": [
 								{
 									"type": "initial",
-									"maximumWarning": "500kb",
-									"maximumError": "1mb"
+									"maximumWarning": "500kB",
+									"maximumError": "1MB"
 								},
 								{
 									"type": "anyComponentStyle",
-									"maximumWarning": "2kb",
-									"maximumError": "4kb"
+									"maximumWarning": "4kB",
+									"maximumError": "8kB"
 								}
 							],
-							"outputHashing": "all",
-							"fileReplacements": [
-								{
-									"replace": "src/environments/environment.ts",
-									"with": "src/environments/environment.prod.ts"
-								}
-							]
+							"outputHashing": "all"
 						},
 						"development": {
 							"optimization": false,
 							"extractLicenses": false,
-							"sourceMap": true,
-							"namedChunks": true
+							"sourceMap": true
 						}
 					},
 					"defaultConfiguration": "production"
 				},
 				"serve-original": {
-					"builder": "@angular-devkit/build-angular:dev-server",
+					"builder": "@angular/build:dev-server",
 					"configurations": {
 						"production": {
-							"buildTarget": "ahoy-shell:esbuild:production"
+							"buildTarget": "widget:esbuild:production"
 						},
 						"development": {
-							"buildTarget": "ahoy-shell:esbuild:development"
+							"buildTarget": "widget:esbuild:development"
 						}
 					},
 					"defaultConfiguration": "development",
 					"options": {
-						"port": 3000,
+						"port": 3003,
 						"host": "0.0.0.0"
 					}
 				}
 			}
 		}
-	},
-	"cli": {
-		"analytics": false
 	}
 }

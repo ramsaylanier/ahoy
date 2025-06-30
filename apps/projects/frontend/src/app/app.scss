@@ -43,6 +43,24 @@
   font-size: 0.9rem;
 }
 
+.widget-section {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  .widget-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    
+    ::ng-deep .widget-container {
+      padding: 0;
+      max-width: none;
+    }
+  }
+}
+
 .create-form-card {
   margin: 16px;
   max-width: 1200px;

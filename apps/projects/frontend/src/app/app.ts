@@ -21,12 +21,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSortModule, Sort } from '@angular/material/sort';
+import { loadRemoteModule } from '@angular-architects/native-federation';
 
 import {
   ProjectService,
   Project,
   ProjectStats,
-} from './services/project.service';
+} from '../services/project.service';
 
 @Component({
   selector: 'app-root',
@@ -59,6 +60,10 @@ export class App implements OnInit {
   loadingStats = signal(false);
   showCreateForm = false;
   createForm: FormGroup;
+
+  // Widget properties
+  widgetComponent: any = null;
+  loadingWidget = signal(false);
 
   // Table properties
   displayedColumns: string[] = [
@@ -99,6 +104,7 @@ export class App implements OnInit {
   ngOnInit() {
     this.loadProjects();
     this.loadStats();
+    this.loadWidget();
   }
 
   loadProjects() {
@@ -266,5 +272,18 @@ export class App implements OnInit {
   get paginatedProjects(): Project[] {
     const startIndex = this.currentPage * this.pageSize;
     return this.projects.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  loadWidget() {
+    this.loadingWidget.set(true);
+    loadRemoteModule('widget', './TimeWidget')
+      .then((m) => {
+        this.widgetComponent = m.App;
+        this.loadingWidget.set(false);
+      })
+      .catch((error) => {
+        console.error('Error loading widget:', error);
+        this.loadingWidget.set(false);
+      });
   }
 }
