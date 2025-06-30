@@ -1,50 +1,37 @@
 # Ahoy Microservices Architecture
 
-A modern web application built with a microservices architecture using Angular for the frontend shell application and Node.js microservices, all orchestrated with Kubernetes and Devspace V6.
+A modern web application built with a microservices architecture using Angular for the frontend applications and Node.js microservices, all orchestrated with Kubernetes and Devspace V6.
 
 ## 🏗️ Architecture Overview
 
 This project implements a microservices architecture with the following components:
 
-### Frontend (Shell Application)
+### Frontend Applications
 
-- **Technology**: Angular 17 with Material Design
-- **Port**: 3000
-- **Purpose**: Main user interface that integrates with various microservices
+1. **Shell Application** (Port 3000)
+
+   - **Technology**: Angular 20 with Material Design
+   - **Purpose**: Main user interface shell application that integrates with various microservices
+   - **Features**: Module federation support, Material Design components, charts integration
+
+2. **Projects Frontend** (Port 3001)
+   - **Technology**: Angular 20
+   - **Purpose**: Dedicated frontend for project management functionality
+   - **Features**: Module federation support, project-specific UI components
 
 ### Microservices
 
-1. **Auth Service** (Port 3001)
-
-   - User authentication and authorization
-   - JWT token management
-   - User registration and login
-
-2. **User Service** (Port 3002)
-
-   - User profile management
-   - User data operations
-
-3. **Product Service** (Port 3003)
-
-   - Product catalog management
-   - Product CRUD operations
-
-4. **Order Service** (Port 3004)
-
-   - Order processing and management
-   - Order lifecycle management
-
-5. **Notification Service** (Port 3005)
-   - Email and push notifications
-   - Notification preferences
+1. **Projects Backend** (Port 3002)
+   - **Technology**: Node.js with Express and PostgreSQL
+   - **Purpose**: Project management API with database integration
+   - **Features**: Project CRUD operations, PostgreSQL database integration
 
 ### Infrastructure
 
 - **Container Orchestration**: Kubernetes
 - **Development Platform**: Devspace V6
-- **Database**: PostgreSQL
-- **Cache**: Redis
+- **Database**: PostgreSQL (for projects backend)
+- **Cache**: Redis (for auth service)
 - **API Gateway**: Nginx (optional)
 
 ## 🚀 Quick Start
@@ -65,7 +52,7 @@ This project implements a microservices architecture with the following componen
    sudo mv devspace /usr/local/bin/
    ```
 
-3. **Node.js 18+**
+3. **Node.js 22+**
 
    ```bash
    # Install Node.js
@@ -86,27 +73,17 @@ This project implements a microservices architecture with the following componen
    cd Ahoy
    ```
 
-2. **Initialize the project**
-
-   ```bash
-   # Run the setup script
-   ./scripts/setup.sh
-   ```
-
-3. **Start development environment**
+2. **Start development environment**
 
    ```bash
    # Start all services in development mode
    devspace dev
    ```
 
-4. **Access the application**
+3. **Access the application**
    - Shell Application: http://localhost:3000
-   - Auth Service: http://localhost:3001
-   - User Service: http://localhost:3002
-   - Product Service: http://localhost:3003
-   - Order Service: http://localhost:3004
-   - Notification Service: http://localhost:3005
+   - Projects Frontend: http://localhost:3001
+   - Projects Backend: http://localhost:3002
 
 ## 🛠️ Development
 
@@ -115,32 +92,24 @@ This project implements a microservices architecture with the following componen
 ```
 Ahoy/
 ├── apps/
-│   ├── shell/                 # Angular frontend application
+│   ├── shell/                 # Angular shell application
 │   │   ├── devspace.yaml      # Service-specific Devspace config
 │   │   ├── Dockerfile
+│   │   ├── federation.config.js
 │   │   └── src/
-│   ├── auth/                  # Authentication microservice
-│   │   ├── devspace.yaml      # Service-specific Devspace config
-│   │   ├── Dockerfile
-│   │   └── src/
-│   ├── user/                  # User management microservice
-│   │   ├── devspace.yaml      # Service-specific Devspace config
-│   │   ├── Dockerfile
-│   │   └── src/
-│   ├── product/               # Product management microservice
-│   │   ├── devspace.yaml      # Service-specific Devspace config
-│   │   ├── Dockerfile
-│   │   └── src/
-│   ├── order/                 # Order management microservice
-│   │   ├── devspace.yaml      # Service-specific Devspace config
-│   │   ├── Dockerfile
-│   │   └── src/
-│   └── notification/          # Notification microservice
-│       ├── devspace.yaml      # Service-specific Devspace config
-│       ├── Dockerfile
-│       └── src/
-├── charts/
-│   └── microservices/         # Helm chart for Kubernetes deployment
+│   ├── projects/              # Project management application
+│   │   ├── backend/           # Projects backend API
+│   │   │   ├── devspace.yaml  # Service-specific Devspace config
+│   │   │   ├── Dockerfile
+│   │   │   └── src/
+│   │   ├── frontend/          # Projects frontend application
+│   │   │   ├── devspace.yaml  # Service-specific Devspace config
+│   │   │   ├── Dockerfile
+│   │   │   ├── federation.config.js
+│   │   │   └── src/
+│   │   ├── devspace.yaml      # Projects-specific Devspace config
+│   │   ├── charts/            # Helm charts for projects
+│   │   └── start-dev.sh       # Development startup script
 ├── devspace.yaml              # Root Devspace configuration
 └── README.md
 ```
@@ -190,24 +159,16 @@ devspace logs
 cd apps/shell
 devspace dev
 
-# Work on auth service only
-cd apps/auth
+# Work on projects
+cd apps/projects
 devspace dev
 
-# Work on user service only
-cd apps/user
+# Work on projects backend only
+cd apps/projects/backend
 devspace dev
 
-# Work on product service only
-cd apps/product
-devspace dev
-
-# Work on order service only
-cd apps/order
-devspace dev
-
-# Work on notification service only
-cd apps/notification
+# Work on projects frontend only
+cd apps/projects/frontend
 devspace dev
 ```
 
@@ -215,15 +176,12 @@ devspace dev
 
 ```bash
 # From root directory, run service-specific pipelines
-devspace run shell-dev      # Build, deploy, and dev shell service
-devspace run auth-dev       # Build, deploy, and dev auth service
-devspace run user-dev       # Build, deploy, and dev user service
-devspace run product-dev    # Build, deploy, and dev product service
-devspace run order-dev      # Build, deploy, and dev order service
-devspace run notification-dev # Build, deploy, and dev notification service
+devspace run shell-dev           # Build, deploy, and dev shell service
+devspace run projects-backend-dev # Build, deploy, and dev projects backend
+devspace run projects-frontend-dev # Build, deploy, and dev projects frontend
 ```
 
-#### Shell Application (Angular)
+#### Frontend Applications (Angular)
 
 ```bash
 cd apps/shell
@@ -231,13 +189,10 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm run test         # Run tests
 npm run lint         # Run linting
-```
 
-#### Microservices
-
-```bash
-cd apps/auth         # (or any other service)
+cd apps/projects/frontend
 npm run dev          # Start development server
+npm run build        # Build for production
 npm run test         # Run tests
 npm run lint         # Run linting
 ```
@@ -251,8 +206,8 @@ npm run lint         # Run linting
 devspace build
 
 # Build specific service
-devspace build auth
-cd apps/auth && devspace build
+devspace build projects
+cd apps/projects && devspace build
 ```
 
 ### Deploying to Kubernetes
@@ -262,8 +217,8 @@ cd apps/auth && devspace build
 devspace deploy
 
 # Deploy specific service
-devspace deploy auth
-cd apps/auth && devspace deploy
+devspace deploy projecs
+cd apps/projects && devspace deploy
 
 # Deploy to production
 devspace deploy --namespace production
@@ -277,6 +232,7 @@ The project includes Helm charts for easy deployment:
 - Services for internal communication
 - Ingress for external access
 - ConfigMaps and Secrets for configuration
+- PostgreSQL deployment for projects backend
 
 ## 🔧 Configuration
 
@@ -287,16 +243,19 @@ The project includes Helm charts for easy deployment:
 - `API_BASE_URL`: Base URL for API calls
 - `NODE_ENV`: Environment (development/production)
 
-#### Auth Service
+#### Projects Backend
 
-- `JWT_SECRET`: Secret key for JWT tokens
-- `DATABASE_URL`: PostgreSQL connection string
-- `REDIS_URL`: Redis connection string
-
-#### Other Services
-
-- `DATABASE_URL`: Service-specific database connection
+- `DB_HOST`: PostgreSQL host
+- `DB_PORT`: PostgreSQL port
+- `DB_NAME`: Database name
+- `DB_USER`: Database user
+- `DB_PASSWORD`: Database password
 - `NODE_ENV`: Environment setting
+
+#### Projects Frontend
+
+- `NODE_ENV`: Environment setting
+- `PORT`: Frontend port
 
 ### Secrets Management
 
@@ -305,6 +264,10 @@ Create Kubernetes secrets for sensitive data:
 ```bash
 kubectl create secret generic auth-secrets \
   --from-literal=jwt-secret=your-secret-key \
+  --from-literal=database-url=postgresql://user:pass@host:port/db \
+  --from-literal=redis-url=redis://host:port
+
+kubectl create secret generic user-secrets \
   --from-literal=database-url=postgresql://user:pass@host:port/db
 ```
 
@@ -315,9 +278,8 @@ Each service includes health check endpoints:
 - Shell: `GET /health`
 - Auth: `GET /health`
 - User: `GET /health`
-- Product: `GET /health`
-- Order: `GET /health`
-- Notification: `GET /health`
+- Projects Backend: `GET /health`
+- Projects Frontend: `GET /health`
 
 ## 🧪 Testing
 
@@ -327,8 +289,8 @@ Each service includes health check endpoints:
 # Test shell application
 cd apps/shell && npm run test
 
-# Test microservices
-cd apps/auth && npm run test
+# Test projects frontend
+cd apps/projects/frontend && npm run test
 ```
 
 ### Integration Tests
