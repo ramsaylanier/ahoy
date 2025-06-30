@@ -1,188 +1,23 @@
 version: v2beta1
 name: projects
 
-# Service-specific variables
-vars:
-  IMAGE_TAG: "latest"
-  BACKEND_PORT: "3002"
-  FRONTEND_PORT: "3001"
-  DB_PORT: "5432"
-  DB_USER: "postgres"
-  DB_PASSWORD: "ahoy123"
-  DB_NAME: "ahoy_projects"
+dependencies:
+  projects-backend:
+    path: ./backend
+    pipeline: dev
+  projects-frontend:
+    path: ./frontend
+    pipeline: dev
 
 # This is a list of `pipelines` that DevSpace can execute
 pipelines:
   dev:
     run: |-
-      run_dependencies --all       
-      ensure_pull_secrets --all 
-      create_deployments --all 
-      start_dev projects
+      run_dependencies --all
 
-  build:
-    run: |
-      build_images --all -t $(git describe --always)
+  build: run_dependencies --all --pipeline build
 
   # You can run this pipeline via `devspace deploy`
   deploy:
     run: |-
-      run_dependencies --all                            # 1. Deploy any projects this project needs
-      ensure_pull_secrets --all                         # 2. Ensure pull secrets
-      build_images --all -t $(git describe --always)    # 3. Build, tag and push all images
-      create_deployments --all                          # 4. Deploy Helm charts and manifests
-
-# Images configuration
-images:
-  projects:
-    image: ghcr.io/ahoy/projects-backend:${IMAGE_TAG}
-    dockerfile: ./backend/Dockerfile
-    context: ./backend
-    buildArgs:
-      NODE_ENV: development
-
-  frontend:
-    image: ghcr.io/ahoy/projects-frontend:${IMAGE_TAG}
-    dockerfile: ./frontend/Dockerfile
-    context: ./frontend
-    buildArgs:
-      NODE_ENV: development
-
-# Deployments configuration
-deployments:
-  postgres:
-    helm:
-      chart:
-        name: postgresql
-        repo: https://charts.bitnami.com/bitnami
-        version: 16.7.14
-      values:
-        auth:
-          postgresPassword: ${DB_PASSWORD}
-          database: ${DB_NAME}
-        primary:
-          service:
-            type: ClusterIP
-          persistence:
-            enabled: true
-            size: 1Gi
-        metrics:
-          enabled: false
-
-  backend:
-    helm:
-      chart:
-        name: component-chart
-        repo: https://charts.devspace.sh
-      values:
-        containers:
-          - image: image(backend)
-        service:
-          ports:
-            - port: ${BACKEND_PORT}
-        env:
-          - name: NODE_ENV
-            value: development
-          - name: PORT
-            value: ${BACKEND_PORT}
-          - name: DB_HOST
-            value: postgres-postgresql
-          - name: DB_PORT
-            value: ${DB_PORT}
-          - name: DB_NAME
-            value: ${DB_NAME}
-          - name: DB_USER
-            value: ${DB_USER}
-          - name: DB_PASSWORD
-            value: ${DB_PASSWORD}
-
-  frontend:
-    helm:
-      chart:
-        name: component-chart
-        repo: https://charts.devspace.sh
-      values:
-        containers:
-          - image: image(frontend)
-        service:
-          ports:
-            - port: ${FRONTEND_PORT}
-        env:
-          - name: NODE_ENV
-            value: development
-          - name: PORT
-            value: ${FRONTEND_PORT}
-
-# Development configuration
-dev:
-  projects:
-    imageSelector: image(backend)
-    devImage: node:22-alpine
-    workingDir: /app
-    sync:
-      - path: ./backend:/app/backend
-        excludePaths:
-          - node_modules/
-          - .git/
-          - dist/
-          - build/
-      - path: ./frontend:/app/frontend
-        excludePaths:
-          - node_modules/
-          - .git/
-          - dist/
-          - build/
-          - .angular/
-    terminal:
-      command: |
-        echo "Starting both backend and frontend services..."
-
-        # Start backend in background
-        echo "Starting backend on port 3002..."
-        cd /app/backend
-        npm install
-        npm run dev &
-        BACKEND_PID=$!
-        echo "Backend started with PID: $BACKEND_PID"
-
-        # Start frontend in background
-        echo "Starting frontend on port 3001..."
-        cd /app/frontend
-        npm install
-        npm run dev &
-        FRONTEND_PID=$!
-        echo "Frontend started with PID: $FRONTEND_PID"
-
-        echo "Both services are running!"
-        echo "Backend: http://localhost:3002"
-        echo "Frontend: http://localhost:3001"
-        echo ""
-        echo "Press Ctrl+C to stop both services"
-
-        # Wait for interrupt signal
-        trap 'echo "Stopping services..."; kill $BACKEND_PID $FRONTEND_PID; exit 0' INT TERM
-        wait
-    logs:
-      enabled: true
-    ssh:
-      enabled: true
-    ports:
-      - port: ${BACKEND_PORT}
-      - port: ${FRONTEND_PORT}
-    env:
-      - name: NODE_ENV
-        value: development
-      - name: PORT
-        value: ${BACKEND_PORT}
-      - name: DB_HOST
-        value: postgres-postgresql
-      - name: DB_PORT
-        value: ${DB_PORT}
-      - name: DB_NAME
-        value: ${DB_NAME}
-      - name: DB_USER
-        value: ${DB_USER}
-      - name: DB_PASSWORD
-        value: ${DB_PASSWORD}
-    open:
-      - url: http://localhost:${FRONTEND_PORT}
+      run_dependencies --all --pipeline deploy

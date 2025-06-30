@@ -8,6 +8,11 @@ vars:
   REGISTRY: "ghcr.io"
   IMAGE_TAG: "latest"
 
+dependencies:
+  projects:
+    path: ../projects
+    pipeline: dev
+
 # This is a list of `pipelines` that DevSpace can execute (you can define your own)
 pipelines:
   # This is the pipeline for the main command: `devspace dev` (or `devspace run-pipeline dev`)
@@ -59,8 +64,13 @@ dev:
           - dist/
           - build/
           - .angular/
-    terminal:
-      command: "npm install && npm run dev"
+        startContainer: true
+        onUpload:
+          exec:
+            - command: |-
+                echo "Installing dependencies..."
+                npm install
+    command: ["npm", "run", "dev"]
     logs:
       enabled: true
     ssh:
