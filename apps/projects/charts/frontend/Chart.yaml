@@ -1,6 +1,0 @@
-apiVersion: v2
-name: ahoy-projects-frontend
-description: A Helm chart for Ahoy Projects Frontend
-type: application
-version: 0.1.0
-appVersion: "1.0.0"

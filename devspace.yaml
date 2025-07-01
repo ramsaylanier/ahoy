@@ -4,19 +4,12 @@ name: ahoy
 dependencies:
   shell:
     path: ./apps/shell
-  projects:
-    path: ./apps/projects
 
 # Pipeline configuration for orchestrating all services
 pipelines:
   dev:
     run: |
-      # Build all services
-      devspace build
-      # Deploy to development environment
-      devspace deploy
-      # Start development mode for all services
-      devspace dev
+      run_dependencies --all
 
   prod:
     run: |
@@ -31,24 +24,3 @@ pipelines:
       devspace build shell
       devspace deploy shell
       devspace dev shell
-
-  auth-dev:
-    run: |
-      devspace build auth
-      devspace deploy auth
-      devspace dev auth
-
-  user-dev:
-    run: |
-      devspace build user
-      devspace deploy user
-      devspace dev user
-
-# Global hooks for shared functionality
-hooks:
-  - command: echo "Starting Ahoy Microservices Development Environment"
-    events:
-      - before:dev
-  - command: echo "All services deployed successfully"
-    events:
-      - after:deploy
