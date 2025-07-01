@@ -1,10 +1,11 @@
-import { Component } from "@angular/core";
+import { Component, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { loadRemoteModule } from "@angular-architects/native-federation";
 
 @Component({
   selector: "app-dashboard",
@@ -22,6 +23,14 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
       <div class="dashboard-header">
         <h1>Dashboard</h1>
         <p>Welcome to the Ahoy Dashboard</p>
+      </div>
+
+      <div *ngIf="loadingWidget()">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Loading widget...</p>
+      </div>
+      <div class="widget-container" *ngIf="!loadingWidget() && widgetComponent">
+        <ng-container *ngComponentOutlet="widgetComponent"></ng-container>
       </div>
 
       <div class="dashboard-grid">
@@ -308,8 +317,24 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
     `,
   ],
 })
-export class DashboardComponent {
-  constructor() {
-    console.log("Dashboard component loaded from shell");
+export class DashboardComponent implements OnInit {
+  loadingWidget = signal(false);
+  widgetComponent: any = null;
+
+  ngOnInit() {
+    this.loadWidget();
+  }
+
+  loadWidget() {
+    this.loadingWidget.set(true);
+    loadRemoteModule("widget", "./TimeWidget")
+      .then((m) => {
+        this.widgetComponent = m.App;
+        this.loadingWidget.set(false);
+      })
+      .catch((error) => {
+        console.error("Error loading widget:", error);
+        this.loadingWidget.set(false);
+      });
   }
 }

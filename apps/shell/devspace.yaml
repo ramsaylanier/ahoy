@@ -12,6 +12,9 @@ dependencies:
   projects:
     path: ../projects
     pipeline: dev
+  react-frontend:
+    path: ../react-frontend
+    pipeline: dev
 
 # This is a list of `pipelines` that DevSpace can execute (you can define your own)
 pipelines:
