@@ -2,8 +2,14 @@ const { withNativeFederation, shareAll } = require('@angular-architects/native-f
 
 module.exports = withNativeFederation({
 
+  remotes: {
+    'react-frontend': 'http://localhost:3005/remoteEntry.js',
+  },
+
   shared: {
     ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+    react: { singleton: true, requiredVersion: '^19.1.0' },
+    'react-dom': { singleton: true, requiredVersion: '^19.1.0' },
   },
 
   skip: [
@@ -11,6 +17,7 @@ module.exports = withNativeFederation({
     'rxjs/fetch',
     'rxjs/testing',
     'rxjs/webSocket',
+    /^@module-federation/,
     // Add further packages you don't need at runtime
   ],
 

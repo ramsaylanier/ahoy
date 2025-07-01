@@ -9,7 +9,18 @@ import { MatListModule } from "@angular/material/list";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
-import { loadRemoteModule } from "@angular-architects/native-federation";
+import { init, loadRemote } from "@module-federation/enhanced/runtime";
+
+init({
+  name: "shell",
+  remotes: [
+    {
+      name: "react_frontend",
+      entry: "http://localhost:3005/remoteEntry.js",
+    },
+  ],
+});
+loadRemote("react_frontend/App");
 
 @Component({
   selector: "app-root",
@@ -66,6 +77,12 @@ import { loadRemoteModule } from "@angular-architects/native-federation";
             <a routerLink="/projects" routerLinkActive="active">
               <mat-icon>inventory</mat-icon>
               <span>Projects</span>
+            </a>
+          </mat-list-item>
+          <mat-list-item>
+            <a routerLink="/react-app" routerLinkActive="active">
+              <mat-icon>code</mat-icon>
+              <span>React App</span>
             </a>
           </mat-list-item>
         </mat-nav-list>
@@ -163,20 +180,5 @@ export class AppComponent implements OnInit {
   widgetComponent: any = null;
   loadingWidget = false;
 
-  ngOnInit() {
-    this.loadWidget();
-  }
-
-  loadWidget() {
-    this.loadingWidget = true;
-    loadRemoteModule("widget", "./TimeWidget")
-      .then((m) => {
-        this.widgetComponent = m.App;
-        this.loadingWidget = false;
-      })
-      .catch((error) => {
-        console.error("Error loading widget:", error);
-        this.loadingWidget = false;
-      });
-  }
+  ngOnInit() {}
 }

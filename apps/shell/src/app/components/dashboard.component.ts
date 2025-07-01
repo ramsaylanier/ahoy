@@ -1,5 +1,6 @@
 import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { RouterModule } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -10,6 +11,7 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
@@ -145,21 +147,14 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
         </mat-card-header>
         <mat-card-content>
           <div class="actions-grid">
-            <button mat-raised-button color="primary">
-              <mat-icon>add</mat-icon>
-              Create Project
+            <button mat-raised-button color="primary" routerLink="/projects">
+              <mat-icon>folder</mat-icon>
+              Projects
             </button>
-            <button mat-raised-button color="accent">
-              <mat-icon>person_add</mat-icon>
-              Add User
-            </button>
+
             <button mat-raised-button>
               <mat-icon>settings</mat-icon>
               Settings
-            </button>
-            <button mat-raised-button>
-              <mat-icon>help</mat-icon>
-              Help
             </button>
           </div>
         </mat-card-content>
