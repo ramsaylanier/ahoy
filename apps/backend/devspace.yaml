@@ -6,10 +6,12 @@ vars:
   IMAGE_TAG: "latest"
   BACKEND_PORT: "3001"
   FRONTEND_PORT: "3000"
+  DB_HOST: "postgres-postgresql"
   DB_PORT: "5432"
   DB_USER: "postgres"
   DB_PASSWORD: "ahoy123"
   DB_NAME: "ahoy_projects"
+  DB_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 
 # This is a list of `pipelines` that DevSpace can execute
 pipelines:
@@ -31,6 +33,10 @@ pipelines:
       ensure_pull_secrets --all                         # 2. Ensure pull secrets
       build_images --all -t $(git describe --always)    # 3. Build, tag and push all images
       create_deployments --all                          # 4. Deploy Helm charts and manifests
+
+commands:
+  port-forward-db: |-
+    kubectl port-forward svc/postgres-postgresql 5432:5432
 
 # Images configuration
 images:
@@ -78,7 +84,7 @@ deployments:
           - name: PORT
             value: ${BACKEND_PORT}
           - name: DB_HOST
-            value: postgres-postgresql
+            value: ${DB_HOST}
           - name: DB_PORT
             value: ${DB_PORT}
           - name: DB_NAME
@@ -87,6 +93,8 @@ deployments:
             value: ${DB_USER}
           - name: DB_PASSWORD
             value: ${DB_PASSWORD}
+          - name: DATABASE_URL
+            value: ${DB_URL}
 
 # Development configuration
 dev:
@@ -120,7 +128,7 @@ dev:
       - name: PORT
         value: ${BACKEND_PORT}
       - name: DB_HOST
-        value: postgres-postgresql
+        value: ${DB_HOST}
       - name: DB_PORT
         value: ${DB_PORT}
       - name: DB_NAME
@@ -129,3 +137,5 @@ dev:
         value: ${DB_USER}
       - name: DB_PASSWORD
         value: ${DB_PASSWORD}
+      - name: DATABASE_URL
+        value: ${DB_URL}

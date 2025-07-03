@@ -12,13 +12,13 @@ dependencies:
 pipelines:
   dev:
     run: |
-      run_dependencies --all
+      run_dependencies backend frontend
       echo "Root dev pipeline complete."
   build:
     run: |
-      run_dependencies --all
+      run_dependencies backend frontend
       echo "Root build pipeline complete."
   deploy:
     run: |
-      run_dependencies --all
+      run_dependencies backend frontend
       echo "Root deploy pipeline complete."

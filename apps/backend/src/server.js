@@ -5,7 +5,7 @@ require('dotenv').config();
 const teamRoutes = require('./routes/teamRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
@@ -64,6 +64,7 @@ app.use('*', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
+  console.log(process.env)
   console.log(`🚀 Ahoy Teams Backend server running on port ${PORT}`);
   console.log(`📊 API available at http://localhost:${PORT}/api/teams`);
   console.log(`🏥 Health check at http://localhost:${PORT}/health`);

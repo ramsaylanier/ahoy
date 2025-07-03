@@ -42,7 +42,7 @@ export interface ApiResponse<T> {
   total?: number;
 }
 
-const API_BASE_URL = 'http://localhost:3002/api';
+const API_BASE_URL = 'http://localhost:3001/api';
 
 class TeamService {
   private async request<T>(
