@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-// @ts-expect-error TanStack Router type mismatch workaround
 export const Route = createFileRoute('/')({
   component: Home,
 });

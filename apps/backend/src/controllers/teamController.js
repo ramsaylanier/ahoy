@@ -1,8 +1,8 @@
-const projectService = require('../services/projectService');
+const teamService = require('../services/teamService');
 
-class ProjectController {
-  // Get all projects
-  async getAllProjects(req, res) {
+class TeamController {
+  // Get all teams
+  async getAllTeams(req, res) {
     try {
       const filters = {
         status: req.query.status,
@@ -10,142 +10,142 @@ class ProjectController {
         search: req.query.search
       };
 
-      const projects = await projectService.getAllProjects(filters);
+      const teams = await teamService.getAllTeams(filters);
       
       res.json({
         success: true,
-        data: projects,
-        total: projects.length
+        data: teams,
+        total: teams.length
       });
     } catch (error) {
-      console.error('Controller error - getAllProjects:', error);
+      console.error('Controller error - getAllTeams:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch projects',
+        message: 'Failed to fetch teams',
         error: error.message
       });
     }
   }
 
-  // Get project by ID
-  async getProjectById(req, res) {
+  // Get team by ID
+  async getTeamById(req, res) {
     try {
       const { id } = req.params;
-      const project = await projectService.getProjectById(id);
+      const team = await teamService.getTeamById(id);
 
-      if (!project) {
+      if (!team) {
         return res.status(404).json({
           success: false,
-          message: 'Project not found'
+          message: 'Team not found'
         });
       }
 
       res.json({
         success: true,
-        data: project
+        data: team
       });
     } catch (error) {
-      console.error('Controller error - getProjectById:', error);
+      console.error('Controller error - getTeamById:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch project',
+        message: 'Failed to fetch team',
         error: error.message
       });
     }
   }
 
-  // Create new project
-  async createProject(req, res) {
+  // Create new team
+  async createTeam(req, res) {
     try {
-      const projectData = req.body;
+      const teamData = req.body;
 
       // Basic validation
-      if (!projectData.name || !projectData.description) {
+      if (!teamData.name || !teamData.description) {
         return res.status(400).json({
           success: false,
           message: 'Name and description are required'
         });
       }
 
-      const newProject = await projectService.createProject(projectData);
+      const newTeam = await teamService.createTeam(teamData);
 
       res.status(201).json({
         success: true,
-        message: 'Project created successfully',
-        data: newProject
+        message: 'Team created successfully',
+        data: newTeam
       });
     } catch (error) {
-      console.error('Controller error - createProject:', error);
+      console.error('Controller error - createTeam:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to create project',
+        message: 'Failed to create team',
         error: error.message
       });
     }
   }
 
-  // Update project
-  async updateProject(req, res) {
+  // Update team
+  async updateTeam(req, res) {
     try {
       const { id } = req.params;
-      const projectData = req.body;
+      const teamData = req.body;
 
-      const updatedProject = await projectService.updateProject(id, projectData);
+      const updatedTeam = await teamService.updateTeam(id, teamData);
 
-      if (!updatedProject) {
+      if (!updatedTeam) {
         return res.status(404).json({
           success: false,
-          message: 'Project not found'
+          message: 'Team not found'
         });
       }
 
       res.json({
         success: true,
-        message: 'Project updated successfully',
-        data: updatedProject
+        message: 'Team updated successfully',
+        data: updatedTeam
       });
     } catch (error) {
-      console.error('Controller error - updateProject:', error);
+      console.error('Controller error - updateTeam:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to update project',
+        message: 'Failed to update team',
         error: error.message
       });
     }
   }
 
-  // Delete project
-  async deleteProject(req, res) {
+  // Delete team
+  async deleteTeam(req, res) {
     try {
       const { id } = req.params;
-      const deletedProject = await projectService.deleteProject(id);
+      const deletedTeam = await teamService.deleteTeam(id);
 
-      if (!deletedProject) {
+      if (!deletedTeam) {
         return res.status(404).json({
           success: false,
-          message: 'Project not found'
+          message: 'Team not found'
         });
       }
 
       res.json({
         success: true,
-        message: 'Project deleted successfully',
-        data: deletedProject
+        message: 'Team deleted successfully',
+        data: deletedTeam
       });
     } catch (error) {
-      console.error('Controller error - deleteProject:', error);
+      console.error('Controller error - deleteTeam:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to delete project',
+        message: 'Failed to delete team',
         error: error.message
       });
     }
   }
 
-  // Get project statistics
-  async getProjectStats(req, res) {
+  // Get team statistics
+  async getTeamStats(req, res) {
     try {
-      const stats = await projectService.getProjectStats();
+      const stats = await teamService.getTeamStats();
 
       res.json({
         success: true,
@@ -164,14 +164,14 @@ class ProjectController {
         }
       });
     } catch (error) {
-      console.error('Controller error - getProjectStats:', error);
+      console.error('Controller error - getTeamStats:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch project statistics',
+        message: 'Failed to fetch team statistics',
         error: error.message
       });
     }
   }
 }
 
-module.exports = new ProjectController(); 
+module.exports = new TeamController(); 

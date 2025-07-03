@@ -31,6 +31,11 @@ export default defineConfig({
         }),
       ],
     },
+
+    postcss: (_, { addPlugins }) => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      addPlugins(require('@tailwindcss/postcss'));
+    },
   },
   server: {
     host: '0.0.0.0',

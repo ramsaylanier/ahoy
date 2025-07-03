@@ -1,10 +1,10 @@
 const pool = require('../config/database');
 
-class ProjectService {
-  // Get all projects with optional filtering
-  async getAllProjects(filters = {}) {
+class TeamService {
+  // Get all teams with optional filtering
+  async getAllTeams(filters = {}) {
     try {
-      let query = 'SELECT * FROM projects';
+      let query = 'SELECT * FROM teams';
       const params = [];
       let paramCount = 0;
 
@@ -38,15 +38,15 @@ class ProjectService {
       const result = await pool.query(query, params);
       return result.rows;
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error('Error fetching teams:', error);
       throw error;
     }
   }
 
-  // Get project by ID
-  async getProjectById(id) {
+  // Get team by ID
+  async getTeamById(id) {
     try {
-      const query = 'SELECT * FROM projects WHERE id = $1';
+      const query = 'SELECT * FROM teams WHERE id = $1';
       const result = await pool.query(query, [id]);
       
       if (result.rows.length === 0) {
@@ -55,13 +55,13 @@ class ProjectService {
       
       return result.rows[0];
     } catch (error) {
-      console.error('Error fetching project by ID:', error);
+      console.error('Error fetching team by ID:', error);
       throw error;
     }
   }
 
-  // Create new project
-  async createProject(projectData) {
+  // Create new team
+  async createTeam(teamData) {
     try {
       const {
         name,
@@ -70,13 +70,13 @@ class ProjectService {
         start_date,
         end_date,
         progress,
-        team,
+        members,
         budget,
         priority
-      } = projectData;
+      } = teamData;
 
       const query = `
-        INSERT INTO projects (name, description, status, start_date, end_date, progress, team, budget, priority)
+        INSERT INTO teams (name, description, status, start_date, end_date, progress, members, budget, priority)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
       `;
@@ -88,7 +88,7 @@ class ProjectService {
         start_date,
         end_date,
         progress,
-        JSON.stringify(team),
+        JSON.stringify(members),
         budget,
         priority
       ];
@@ -96,13 +96,13 @@ class ProjectService {
       const result = await pool.query(query, values);
       return result.rows[0];
     } catch (error) {
-      console.error('Error creating project:', error);
+      console.error('Error creating team:', error);
       throw error;
     }
   }
 
-  // Update project
-  async updateProject(id, projectData) {
+  // Update team
+  async updateTeam(id, teamData) {
     try {
       const {
         name,
@@ -111,15 +111,15 @@ class ProjectService {
         start_date,
         end_date,
         progress,
-        team,
+        members,
         budget,
         priority
-      } = projectData;
+      } = teamData;
 
       const query = `
-        UPDATE projects 
+        UPDATE teams 
         SET name = $1, description = $2, status = $3, start_date = $4, 
-            end_date = $5, progress = $6, team = $7, budget = $8, priority = $9,
+            end_date = $5, progress = $6, members = $7, budget = $8, priority = $9,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = $10
         RETURNING *
@@ -132,7 +132,7 @@ class ProjectService {
         start_date,
         end_date,
         progress,
-        JSON.stringify(team),
+        JSON.stringify(members),
         budget,
         priority,
         id
@@ -146,15 +146,15 @@ class ProjectService {
       
       return result.rows[0];
     } catch (error) {
-      console.error('Error updating project:', error);
+      console.error('Error updating team:', error);
       throw error;
     }
   }
 
-  // Delete project
-  async deleteProject(id) {
+  // Delete team
+  async deleteTeam(id) {
     try {
-      const query = 'DELETE FROM projects WHERE id = $1 RETURNING *';
+      const query = 'DELETE FROM teams WHERE id = $1 RETURNING *';
       const result = await pool.query(query, [id]);
       
       if (result.rows.length === 0) {
@@ -163,13 +163,13 @@ class ProjectService {
       
       return result.rows[0];
     } catch (error) {
-      console.error('Error deleting project:', error);
+      console.error('Error deleting team:', error);
       throw error;
     }
   }
 
-  // Get project statistics
-  async getProjectStats() {
+  // Get team statistics
+  async getTeamStats() {
     try {
       const query = `
         SELECT 
@@ -182,16 +182,16 @@ class ProjectService {
           COUNT(CASE WHEN priority = 'high' THEN 1 END) as high_priority,
           COUNT(CASE WHEN priority = 'medium' THEN 1 END) as medium_priority,
           COUNT(CASE WHEN priority = 'low' THEN 1 END) as low_priority
-        FROM projects
+        FROM teams
       `;
 
       const result = await pool.query(query);
       return result.rows[0];
     } catch (error) {
-      console.error('Error fetching project stats:', error);
+      console.error('Error fetching team stats:', error);
       throw error;
     }
   }
 }
 
-module.exports = new ProjectService(); 
+module.exports = new TeamService(); 

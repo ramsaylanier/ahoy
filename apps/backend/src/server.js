@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const projectRoutes = require('./routes/projectRoutes');
+const teamRoutes = require('./routes/teamRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/projects', projectRoutes);
+app.use('/api/teams', teamRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -34,11 +34,11 @@ app.get('/health', (req, res) => {
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    message: 'Ahoy Projects Backend API',
+    message: 'Ahoy Teams Backend API',
     version: '1.0.0',
     endpoints: {
-      projects: '/api/projects',
-      projectStats: '/api/projects/stats',
+      teams: '/api/teams',
+      teamStats: '/api/teams/stats',
       health: '/health'
     }
   });
@@ -64,8 +64,8 @@ app.use('*', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Ahoy Projects Backend server running on port ${PORT}`);
-  console.log(`📊 API available at http://localhost:${PORT}/api/projects`);
+  console.log(`🚀 Ahoy Teams Backend server running on port ${PORT}`);
+  console.log(`📊 API available at http://localhost:${PORT}/api/teams`);
   console.log(`🏥 Health check at http://localhost:${PORT}/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 }); 
