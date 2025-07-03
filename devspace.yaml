@@ -1,0 +1,24 @@
+version: v2beta1
+name: ahoy
+
+dependencies:
+  backend:
+    path: ./apps/backend
+    pipeline: dev
+  frontend:
+    path: ./apps/frontend
+    pipeline: dev
+
+pipelines:
+  dev:
+    run: |
+      run_dependencies --all
+      echo "Root dev pipeline complete."
+  build:
+    run: |
+      run_dependencies --all
+      echo "Root build pipeline complete."
+  deploy:
+    run: |
+      run_dependencies --all
+      echo "Root deploy pipeline complete."
